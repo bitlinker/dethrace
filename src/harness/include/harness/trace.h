@@ -7,6 +7,7 @@
 extern int harness_debug_level;
 
 void debug_printf(const char* fmt, const char* fn, const char* fmt2, ...);  
+void debug_fprintf(const char* fmt, const char* fn, const char* fmt2, ...);  
 void panic_printf(const char* fmt, const char* fn, const char* fmt2, ...);
 void debug_print_vector3(const char* fmt, const char* fn, char* msg, br_vector3* v);
 void debug_print_matrix34(const char* fmt, const char* fn, char* name, br_matrix34* m);
@@ -34,6 +35,7 @@ void debug_print_matrix4(const char* fmt, const char* fn, char* name, br_matrix4
     }
 
 #define LOG_DEBUG(...) debug_printf("\033[0;34m[DEBUG] %s ", __FUNCTION__, __VA_ARGS__)
+#define LOG_FDEBUG(...) debug_fprintf("\033[0;34m[DEBUG] %s ", __FUNCTION__, __VA_ARGS__)
 #define LOG_VEC(msg, v) debug_print_vector3("\033[0;34m[DEBUG] %s ", __FUNCTION__, msg, v)
 #define LOG_MATRIX(msg, m) debug_print_matrix34("\033[0;34m[DEBUG] %s ", __FUNCTION__, msg, m)
 #define LOG_MATRIX4(msg, m) debug_print_matrix4("\033[0;34m[DEBUG] %s ", __FUNCTION__, msg, m)

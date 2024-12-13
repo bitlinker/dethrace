@@ -921,6 +921,8 @@ int original_main(int pArgc, char** pArgv) {
     int i;
     float f;
 
+    LOG_TRACE("original_main start");
+
     for (i = 1; i < pArgc; i++) {
         if (strcasecmp(pArgv[i], "-hires") == 0) {
             gGraf_spec_index = 1;
@@ -958,6 +960,7 @@ int original_main(int pArgc, char** pArgv) {
         }
     }
 
+    LOG_TRACE("GetCurrentDirectoryA_");
     gNetwork_profile_fname[0] = 0;
     uint32_t len = GetCurrentDirectoryA_(240, gNetwork_profile_fname);
     if (len > 0 && len == strlen(gNetwork_profile_fname)) {
@@ -965,7 +968,9 @@ int original_main(int pArgc, char** pArgv) {
         strcat(gNetwork_profile_fname, "/");
         strcat(gNetwork_profile_fname, "NETWORK.INI");
     }
+    LOG_TRACE("GetCurrentDirectoryA_ (%s)", gNetwork_profile_fname);
 
+    LOG_TRACE("GameMain");
     GameMain(pArgc, pArgv);
     return 0;
 }

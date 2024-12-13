@@ -1,5 +1,5 @@
 #include "cameras/debug_camera.h"
-#include <SDL.h>
+#include <SDL2/SDL.h>
 
 mat4 view, projection;
 vec3 cam_pos = { 0, 0, 0 };

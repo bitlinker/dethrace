@@ -16,6 +16,22 @@ if (DETHRACE_ASAN)
 endif()
 
 target_link_libraries(dethrace_obj PUBLIC SDL2::SDL2 smackw32 harness BRender::Full BRender::DDI s3)
+if(VITA)
+    target_link_libraries(dethrace_obj PUBLIC
+        SceSblSsMgr_stub
+        SceDisplay_stub
+        SceGxm_stub
+        SceCtrl_stub
+        SceSysmodule_stub
+        SceCommonDialog_stub 
+        SceAudio_stub 
+        SceAudioIn_stub
+        SceMotion_stub 
+        SceHid_stub 
+        SceTouch_stub 
+        taihen_stub        
+    )
+endif()
 
 if(MSVC)
     target_compile_definitions(dethrace_obj PRIVATE -D_CRT_SECURE_NO_WARNINGS)
@@ -168,11 +184,15 @@ target_sources(dethrace_obj PRIVATE
 )
 
 # Create our main game binary.
-add_executable(dethrace
-    WIN32
-    ${CMAKE_SOURCE_DIR}/packaging/macos/dethrace.icns
-    ${CMAKE_SOURCE_DIR}/packaging/windows/dethrace.rc
-)
+if(VITA)
+    add_executable(dethrace)
+else()
+    add_executable(dethrace
+        WIN32
+        ${CMAKE_SOURCE_DIR}/packaging/macos/dethrace.icns
+        ${CMAKE_SOURCE_DIR}/packaging/windows/dethrace.rc
+    )
+endif()
 
 target_link_libraries(dethrace PRIVATE dethrace_obj compile_with_werror)
 target_sources(dethrace PRIVATE main.c)
@@ -196,6 +216,7 @@ if(DETHRACE_IDE_ARGUMENTS)
         VS_DEBUGGER_COMMAND_ARGUMENTS "${DETHRACE_IDE_ARGUMENTS}"
     )
 endif()
+
 
 if(DETHRACE_INSTALL)
     install(TARGETS dethrace

@@ -1,10 +1,11 @@
-#include <SDL.h>
+#include <SDL2/SDL.h>
 
 #include "harness.h"
 #include "harness/config.h"
 #include "harness/hooks.h"
 #include "harness/trace.h"
 #include "sdl2_scancode_to_dinput.h"
+#include "sdl2_vita_button_to_dinput.h"
 
 SDL_Window* window;
 SDL_Renderer* renderer;
@@ -21,9 +22,14 @@ static void* create_window_and_renderer(char* title, int x, int y, int width, in
     render_width = width;
     render_height = height;
 
-    if (SDL_Init(SDL_INIT_VIDEO) != 0) {
-        LOG_PANIC("SDL_INIT_VIDEO error: %s", SDL_GetError());
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) != 0) {
+        LOG_PANIC("SDL_INIT_VIDEO or SDL_INIT_JOYSTICK error: %s", SDL_GetError());
     }
+
+    // TODO: vita; enable
+    // SDL_SetHint(SDL_HINT_TOUCH_MOUSE_EVENTS, "0");
+    // SDL_setenv("VITA_DISABLE_TOUCH_FRONT", "1", 1);
+    // SDL_setenv("VITA_DISABLE_TOUCH_BACK", "1", 1);
 
     window = SDL_CreateWindow(title,
         SDL_WINDOWPOS_CENTERED,
@@ -54,6 +60,15 @@ static void* create_window_and_renderer(char* title, int x, int y, int width, in
             LOG_INFO("%s\n", SDL_GetPixelFormatName(info.texture_formats[i]));
         }
         LOG_PANIC("Failed to create screen_texture: %s", SDL_GetError());
+    }
+
+    uint32_t joysticks = SDL_NumJoysticks();
+    LOG_FDEBUG("Joystics %d", joysticks);
+    // TODO: vita only
+    if (joysticks > 0) {
+        if (SDL_JoystickOpen(0) == NULL) {
+            LOG_PANIC("There was an error reading from the joystick 0.\n");
+        }
     }
 
     return window;
@@ -116,6 +131,23 @@ static int get_and_handle_message(MSG_* msg) {
             // DInput expects high bit to be set if key is down
             // https://learn.microsoft.com/en-us/previous-versions/windows/desktop/ee418261(v=vs.85)
             directinput_key_state[dinput_key] = (event.type == SDL_KEYDOWN ? 0x80 : 0);
+            break;
+
+        case SDL_JOYAXISMOTION:
+            //LOG_FDEBUG("The value of axis %d was changed to %d.", event.jaxis.axis, event.jaxis.value);
+            break;
+
+        case SDL_JOYBUTTONDOWN:
+            dinput_key = vitaButtonToDirectInputKeyNum[event.jbutton.button];
+            if (dinput_key) {
+                directinput_key_state[dinput_key] = 0x80;
+            }
+            break;
+        case SDL_JOYBUTTONUP:
+            dinput_key = vitaButtonToDirectInputKeyNum[event.jbutton.button];
+            if (dinput_key) {
+                directinput_key_state[dinput_key] = 0x0;
+            }
             break;
 
         case SDL_WINDOWEVENT:

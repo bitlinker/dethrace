@@ -6,6 +6,10 @@
 #include "platforms/null.h"
 #include "version.h"
 
+#ifdef __vita__
+    #include "os/vita/debugScreen.h"
+#endif
+
 #include <ctype.h>
 #include <errno.h>
 #include <stdio.h>
@@ -136,6 +140,14 @@ static void Harness_DetectGameMode(void) {
 void Harness_Init(int* argc, char* argv[]) {
     int result;
 
+#ifdef __vita__
+    //#define printf psvDebugScreenPrintf
+    //psvDebugScreenInit();    
+    LOG_TRACE("Starting vita");
+    sceKernelDelayThread(1*1000000);
+#endif
+
+    // TODO: debug console here
     printf("Dethrace version: %s\n", DETHRACE_VERSION);
 
     memset(&harness_game_info, 0, sizeof(harness_game_info));
@@ -168,12 +180,15 @@ void Harness_Init(int* argc, char* argv[]) {
     // install signal handler by default
     harness_game_config.install_signalhandler = 1;
 
+    printf("Harness_ProcessCommandLine\n");
     Harness_ProcessCommandLine(argc, argv);
 
     if (harness_game_config.install_signalhandler) {
+        printf("OS_InstallSignalHandler\n");
         OS_InstallSignalHandler(argv[0]);
     }
 
+    printf("getenv\n");
     char* root_dir = getenv("DETHRACE_ROOT_DIR");
     if (root_dir != NULL) {
         LOG_INFO("DETHRACE_ROOT_DIR is set to '%s'", root_dir);
@@ -190,14 +205,17 @@ void Harness_Init(int* argc, char* argv[]) {
     }
 
     if (harness_game_info.mode == eGame_none) {
+        printf("Harness_DetectGameMode\n");
         Harness_DetectGameMode();
     }
 
+    printf("Harness_Platform_Init\n");
     if (force_null_platform) {
         Null_Platform_Init(&gHarness_platform);
     } else {
         Harness_Platform_Init(&gHarness_platform);
     }
+    LOG_TRACE("Harness_OK!");
 }
 
 // used by unit tests

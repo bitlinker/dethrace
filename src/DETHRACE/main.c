@@ -45,5 +45,15 @@ int main(int argc, char* argv[]) {
 
     Harness_Init(&argc, argv);
 
+#ifdef __vita__
+    char* hiresArgv[2] = {
+        "dethrace",
+        //"-hires",
+        //"-nosound",
+        "-noreplay",
+    };
+    return original_main(2, hiresArgv);
+#else
     return original_main(argc, argv);
+#endif
 }

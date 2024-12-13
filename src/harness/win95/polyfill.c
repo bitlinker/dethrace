@@ -146,6 +146,19 @@ int FindNextFileA_(HANDLE_ hFindFile, WIN32_FIND_DATAA_* lpFindFileData) {
         strcpy(lpFindFileData->cFileName, fd.cFileName);
     }
     return result;
+#elif defined(__vita__)
+    struct dirent* entry;
+
+    if (hFindFile == NULL) {
+        return 0;
+    }
+    while ((entry = readdir(hFindFile)) != NULL) {
+        if ((entry->d_stat.st_mode & SCE_S_IFMT) == SCE_S_IFREG) {
+            strcpy(lpFindFileData->cFileName, entry->d_name);
+            return 1;
+        }
+    }
+    return 0;
 #else
     struct dirent* entry;
 

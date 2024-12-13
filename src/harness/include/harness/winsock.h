@@ -18,7 +18,12 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <netdb.h> // for getaddrinfo() and freeaddrinfo()
-#include <sys/ioctl.h>
+#ifdef __vita__
+    // TODO: check
+    #define FIONBIO 0x5421 
+#else    
+    #include <sys/ioctl.h>
+#endif
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h> // for close()

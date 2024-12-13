@@ -67,7 +67,9 @@ if (IO_PLATFORM STREQUAL "SDL2")
         platforms/sdl2.c
         platforms/sdl2_scancode_to_dinput.h
     )
-    target_link_libraries(harness PRIVATE SDL2::SDL2)
+    target_link_libraries(harness PRIVATE 
+        SDL2::SDL2
+    )
 endif()
 
 if(WIN32)
@@ -78,6 +80,12 @@ if(WIN32)
 elseif(APPLE)
     target_sources(harness PRIVATE
         os/macos.c
+    )
+elseif(VITA)
+    target_sources(harness PRIVATE
+        os/vita/vita.c
+        os/vita/debugScreen.c
+        os/vita/debugScreenFont.c
     )
 else()
     target_sources(harness PRIVATE

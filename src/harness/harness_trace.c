@@ -7,9 +7,38 @@
 
 int harness_debug_level = 4;
 
+#ifdef __vita__
+    FILE* logFp = NULL;
+#endif
+
+void debug_fprintf(const char* fmt, const char* fn, const char* fmt2, ...) {
+    va_list ap;
+    
+#ifdef __vita__
+    if (!logFp) {
+        logFp = fopen("dethrace_trace.log", "w");
+    }
+
+     fprintf(logFp, fmt, fn);
+
+    va_start(ap, fmt2);
+    vfprintf(logFp, fmt2, ap);
+    va_end(ap);
+    fprintf(logFp, "\n");
+    fflush(logFp);
+#endif
+    printf(fmt, fn);
+
+    va_start(ap, fmt2);
+    vprintf(fmt2, ap);
+    va_end(ap);
+
+    puts("\033[0m");
+}
+
 void debug_printf(const char* fmt, const char* fn, const char* fmt2, ...) {
     va_list ap;
-
+    
     printf(fmt, fn);
 
     va_start(ap, fmt2);

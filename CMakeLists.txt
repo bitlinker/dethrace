@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.30)
 
 if(NOT DEFINED CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Choose the type of build, options are: Debug Release RelWithDebInfo" FORCE)
@@ -8,9 +8,31 @@ project(dethrace C)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")
 
+# DBG:
+set(VITA TRUE)
+if(NOT DEFINED VITA)
+    message( FATAL_ERROR "Debug vita mode!!!" )
+endif()
+
+# add this to config!
+# "cmake.configureArgs": [
+# "-DCMAKE_PREFIX_PATH=/usr/local/vitasdk/arm-vita-eabi/lib"
+# ]
+
 if(MSVC)
     set(CMAKE_INSTALL_BINDIR "." CACHE PATH "User executables")
     set(CMAKE_INSTALL_DOCDIR "." CACHE PATH "Documentation root")
+endif()
+
+## TODO: check why not working!
+if (VITA)
+    if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
+    if(DEFINED ENV{VITASDK})
+        set(CMAKE_TOOLCHAIN_FILE "$ENV{VITASDK}/share/vita.toolchain.cmake" CACHE PATH "toolchain file")
+    else()
+        message(FATAL_ERROR "Please define VITASDK to point to your SDK path!")
+    endif()
+    endif()
 endif()
 
 include(CheckCCompilerFlag)
@@ -132,4 +154,38 @@ if(DETHRACE_INSTALL)
     endif()
 
     include(CPack)
+endif()
+
+if(VITA)
+    # set(VITASDK $ENV{VITASDK})
+    # set(TOOL_OS_SUFFIX "")
+    # set( VITA_ELF_CREATE    "${VITASDK}/bin/vita-elf-create${TOOL_OS_SUFFIX}"       )
+    # set( VITA_ELF_EXPORT    "${VITASDK}/bin/vita-elf-export${TOOL_OS_SUFFIX}"       )
+    # set( VITA_LIBS_GEN      "${VITASDK}/bin/vita-libs-gen${TOOL_OS_SUFFIX}"         )
+    # set( VITA_MAKE_FSELF    "${VITASDK}/bin/vita-make-fself${TOOL_OS_SUFFIX}"       )
+    # set( VITA_MKSFOEX       "${VITASDK}/bin/vita-mksfoex${TOOL_OS_SUFFIX}"           )
+    # set( VITA_PACK_VPK      "${VITASDK}/bin/vita-pack-vpk${TOOL_OS_SUFFIX}"         )
+
+    # TODO: cross-compilation debug
+    # message("DDDDDDDDDDDDDDDDDDD")
+    # message("${VITA_ELF_CREATE}")
+    # message("${VITASDK}")
+    # message("${CMAKE_EXE_LINKER_FLAGS}")
+    # message("${CMAKE_TOOLCHAIN_FILE}")
+    # message("DDDDDDDDDDDDDDDDDDD")
+
+    include("$ENV{VITASDK}/share/vita.cmake" REQUIRED)
+    set(VITA_APP_NAME "Dethrace")
+    set(VITA_TITLEID  "DTRC00001")
+    set(VITA_VERSION  "01.00")
+    
+    vita_create_self(${PROJECT_NAME}.self ${PROJECT_NAME})
+    vita_create_vpk(${PROJECT_NAME}.vpk ${VITA_TITLEID} ${PROJECT_NAME}.self
+         VERSION ${VITA_VERSION}
+         NAME ${VITA_APP_NAME}
+         FILE packaging/vita/sce_sys/icon0.png sce_sys/icon0.png
+         FILE packaging/vita/sce_sys/livearea/contents/bg.png sce_sys/livearea/contents/bg.png
+         FILE packaging/vita/sce_sys/livearea/contents/startup.png sce_sys/livearea/contents/startup.png
+         FILE packaging/vita/sce_sys/livearea/contents/template.xml sce_sys/livearea/contents/template.xml
+    )
 endif()

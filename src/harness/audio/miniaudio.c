@@ -13,6 +13,11 @@
 #define MINIAUDIO_IMPLEMENTATION
 #include "miniaudio/miniaudio.h"
 
+// TODO: if vita
+#include <SDL2/SDL.h>
+#define MA_NO_RUNTIME_LINKING
+#include "miniaudio_sdl.h"
+
 // Must come after miniaudio.h
 #undef STB_VORBIS_HEADER_ONLY
 #include "stb/stb_vorbis.c"
@@ -44,20 +49,36 @@ typedef struct tMiniaudio_stream {
 } tMiniaudio_stream;
 
 ma_engine engine;
+ma_context_ex context;
 ma_sound cda_sound;
 int cda_sound_initialized;
 
 tAudioBackend_error_code AudioBackend_Init(void) {
     ma_result result;
     ma_engine_config config;
+    ma_context_config contextConfig;
 
+    // TODO: if vita
+    ma_backend backends[] = {
+        ma_backend_custom
+    };
+
+    contextConfig = ma_context_config_init();
+    contextConfig.custom.onContextInit = ma_context_init__custom_loader;
+    
+    result = ma_context_init(backends, sizeof(backends)/sizeof(backends[0]), &contextConfig, (ma_context*)&context);
+    if (result != MA_SUCCESS) {
+        printf("Failed to initialize audio context.");
+        return eAB_error;
+    }
     config = ma_engine_config_init();
+    config.pContext = (ma_context*)&context;
     result = ma_engine_init(&config, &engine);
     if (result != MA_SUCCESS) {
         printf("Failed to initialize audio engine.");
         return eAB_error;
     }
-    LOG_INFO("Playback device: '%s'", engine.pDevice->playback.name);
+    LOG_TRACE("Playback device: '%s'", engine.pDevice->playback.name);
     ma_engine_set_volume(&engine, harness_game_config.volume_multiplier);
 
     return eAB_success;

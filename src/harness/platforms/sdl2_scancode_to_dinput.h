@@ -20,7 +20,7 @@
  *
  */
 
-#include <SDL.h>
+#include <SDL2/SDL.h>
 
 #if 0 // Usage Example:
 #include "sdl2_scancode_to_dinput.h"
